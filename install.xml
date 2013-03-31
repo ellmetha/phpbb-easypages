@@ -64,7 +64,13 @@ This allow to easily create dynamic pages by using default forms and default bbc
 					<file from="root/styles/prosilver/template/pages.html" to="styles/prosilver/template/pages.html" />
 					<file from="root/styles/subsilver2/template/pages.html" to="styles/subsilver2/template/pages.html" />
 				</copy>
-
+				<sql><![CDATA[CREATE TABLE IF NOT EXISTS `phpbb_pages` (
+  `page_id` mediumint(8) NOT NULL AUTO_INCREMENT,
+  `page_topic_id` mediumint(8) NOT NULL,
+  `page_string_id` varchar(20) NOT NULL,
+  PRIMARY KEY (`page_id`),
+  UNIQUE KEY `page_string_id` (`page_string_id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=15 ;]]></sql>
 				<open src="includes/acp/acp_board.php">
 					<edit>
 						<find><![CDATA[						'load_cpf_viewtopic'	=> array('lang' => 'LOAD_CPF_VIEWTOPIC',	'validate' => 'bool',	'type' => 'radio:yes_no', 'explain' => false),]]></find>

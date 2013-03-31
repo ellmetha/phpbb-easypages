@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+		<?xml-stylesheet type="text/xsl" href="modx.prosilver.en.xsl"?>
+		<mod xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.phpbb.com/mods/xml/modx-1.0.1.xsd">
+			<header>
+				<license>http://opensource.org/licenses/gpl-license.php GNU General Public License v2</license>
+				<title lang="en">phpBb Easy Pages MOD</title>
+				<description lang="en">This mod allow administrators to define a forum as a dynamic pages container.
+The posts created in this forum can be accessed like normal posts but can also be accessed as "pages", which permits to display only post content and to not display post information (author name, avatar, etc).
+This allow to easily create dynamic pages by using default forms and default bbcode tags.</description>
+				<author-group>
+					<author>
+						<realname>Morgan Aubert</realname>
+						<email>ellmetha@gmail.com</email>
+						<username>ellmetha</username>
+						<contributions />
+					</author>
+				</author-group>
+				<mod-version>
+					<major>1</major>
+					<minor>0</minor>
+					<revision>0</revision>
+					<release></release>
+				</mod-version>
+				<installation>
+					<level>easy</level>
+					<time>200</time>
+					<target-version>
+						<target-primary>3.0.0</target-primary>
+						<target-major allow="exact">3</target-major>
+						<target-minor allow="exact">0</target-minor>
+					</target-version>
+				</installation>
+				<history>
+					<entry>
+						<date>2013-03-31</date>
+						<rev-version>
+							<major>0</major>
+							<minor>1</minor>
+							<revision>1</revision>
+							<release></release>
+						</rev-version>
+						<changelog lang="en">
+							<change>Prosilver template added</change>
+						</changelog>
+					</entry>
+					<entry>
+						<date>2013-03-30</date>
+						<rev-version>
+							<major>0</major>
+							<minor>1</minor>
+							<revision>0</revision>
+							<release></release>
+						</rev-version>
+						<changelog lang="en">
+							<change>Initial release</change>
+						</changelog>
+					</entry>
+				</history>
+				<meta name="modx file generator" content="Geoffreak's Easy phpBB3 MODX Script Generator @ http://www.geoffreak.org" />
+			</header>
+			<action-group>
+				<copy>
+					<file from="root/pages.php" to="pages.php" />
+					<file from="root/styles/prosilver/template/pages.html" to="styles/prosilver/template/pages.html" />
+					<file from="root/styles/subsilver2/template/pages.html" to="styles/subsilver2/template/pages.html" />
+				</copy>
+
+				<open src="includes/acp/acp_board.php">
+					<edit>
+						<find><![CDATA[						'load_cpf_viewtopic'	=> array('lang' => 'LOAD_CPF_VIEWTOPIC',	'validate' => 'bool',	'type' => 'radio:yes_no', 'explain' => false),]]></find>
+						<action type="after-add"><![CDATA[						'legend3'					=> 'ACP_PAGES_SETTINGS',
+						'specific_pages_forum'		=> array('lang' => 'PAGES_SPECIFIC_FORUM', 'validate' => 'int',	'type' => 'custom', 'method' => 'select_single_pages_forum', 'explain' => true),
+]]></action>
+					</edit>
+					<edit>
+						<find><![CDATA[			// Set for selected forums
+			$sql = 'UPDATE ' . FORUMS_TABLE . '
+				SET forum_options = forum_options + ' . (1 << $option) . '
+				WHERE ' . $db->sql_in_set('forum_id', $values);
+			$db->sql_query($sql);
+		}
+
+		// Empty sql cache for forums table because options changed
+		$cache->destroy('sql', FORUMS_TABLE);
+	}]]></find>
+						<action type="after-add"><![CDATA[
+	function select_single_pages_forum($value, $key)
+	{
+		global $user, $config;
+
+		$forum_list = make_forum_select(false, false, true, true, true, false, true);
+
+		// Build forum options
+		$s_forum_options = '<select id="specific_pages_forum" name="config[specific_pages_forum]">';
+		$s_forum_options .= '<option value="0"' . (($value == 0) ? 'selected="selected"' : '') . '>-- No forum --</option>';
+		foreach ($forum_list as $f_id => $f_row)
+		{
+			$s_forum_options .= '<option value="' . $f_id . '" ' . (($value == $f_id) ? 'selected="selected"' : '') . '>' . $f_row['padding'] . $f_row['forum_name'] . '</option>';
+		}
+		$s_forum_options .= '</select>';
+
+		return $s_forum_options;
+	}
+]]></action>
+					</edit>
+				</open>
+				<open src="language/en/acp/board.php">
+					<edit>
+						<find><![CDATA[	'OVERRIDE_STYLE_EXPLAIN'		=> 'Replaces user’s style with the default.',]]></find>
+						<action type="after-add"><![CDATA[	'PAGES_SPECIFIC_FORUM_EXPLAIN'	=> 'Select the specific forum intended to contain dynamic pages',]]></action>
+					</edit>
+					<edit>
+						<find><![CDATA[	'LOAD_USER_ACTIVITY_EXPLAIN'	=> 'Displays active topic/forum in user profiles and user control panel. It is recommended to disable this on boards with more than one million posts.',]]></find>
+						<action type="after-add"><![CDATA[	'PAGES_SPECIFIC_FORUM'			=> 'Forum containing pages',]]></action>
+					</edit>
+				</open>
+				<open src="language/en/acp/common.php">
+					<edit>
+						<find><![CDATA['	'ACP_PERMISSIONS'			=> 'Permissions',]]></find>
+						<action type="before-add"><![CDATA[	'ACP_PAGES_SETTINGS'		=> 'Pages settings',]]></action>
+					</edit>
+				</open>
+				<open src="language/en/common.php">
+					<edit>
+						<find><![CDATA[	'EMAIL_SMTP_ERROR_RESPONSE'			=> 'Ran into problems sending e-mail at <strong>Line %1$s</strong>. Response: %2$s.',]]></find>
+						<action type="after-add"><![CDATA[	'EMPTY_PAGE'						=> 'You must specify a string identifier (slug) for your future page. This string must contain only letters, numbers, underscores or hyphens.',]]></action>
+					</edit>
+					<edit>
+						<find><![CDATA[	'PAGE_OF'				=> 'Page <strong>%1$d</strong> of <strong>%2$d</strong>',]]></find>
+						<action type="before-add"><![CDATA[	'PAGE'					=> 'String ID',]]></action>
+					</edit>
+				</open>
+				<open src="posting.php">
+					<edit>
+						<find><![CDATA[if (in_array($mode, array('post', 'reply', 'quote', 'edit', 'delete')) && !$forum_id)
+{
+	trigger_error('NO_FORUM');
+}]]></find>
+						<action type="after-add"><![CDATA[
+$sql = 'SELECT config_value
+		FROM ' . CONFIG_TABLE . '
+		WHERE config_name = \'specific_pages_forum\'';
+$result = $db->sql_query($sql);
+$pages_forum_id = $db->sql_fetchrow($result)['config_value'];]]></action>
+					</edit>
+					<edit>
+						<find><![CDATA[// Load draft overview
+if ($load && ($mode == 'reply' || $mode == 'quote' || $mode == 'post') && $post_data['drafts'])
+{
+	load_drafts($topic_id, $forum_id);
+}]]></find>
+						<action type="after-add"><![CDATA[
+if (($forum_id == $pages_forum_id) && ($submit || $preview || $refresh || $mode == 'edit') && (empty($topic_id) || ($post_id == $post_data['topic_first_post_id']))) {
+	$post_data['post_page']		= utf8_normalize_nfc(request_var('page', '', true));
+}]]></action>
+					</edit>
+					<edit>
+						<find><![CDATA[	// Parse subject
+	if (!$preview && !$refresh && utf8_clean_string($post_data['post_subject']) === '' && ($mode == 'post' || ($mode == 'edit' && $post_data['topic_first_post_id'] == $post_id)))
+	{
+		$error[] = $user->lang['EMPTY_SUBJECT'];
+	}]]></find>
+						<action type="after-add"><![CDATA[
+	if ($forum_id == $pages_forum_id)
+	{
+		$slug_page_validated = False;
+		if (preg_match('/^[a-z][-a-z0-9]*$/', $post_data['post_page']))
+		{
+			$slug_page_validated = True;
+		}
+		if ($preview && !$refresh && !$slug_page_validated && ($mode == 'post' || ($mode == 'edit' && $post_data['topic_first_post_id'] == $post_id)))
+		{
+			$error[] = $user->lang['EMPTY_PAGE'];
+		}
+	}]]></action>
+					</edit>
+
+					<edit>
+						<find><![CDATA[			// The last parameter tells submit_post if search indexer has to be run
+			$redirect_url = submit_post($mode, $post_data['post_subject'], $post_data['username'], $post_data['topic_type'], $poll, $data, $update_message, ($update_message || $update_subject) ? true : false);]]></find>
+						<action type="after-add"><![CDATA[
+			if ($forum_id == $pages_forum_id)
+			{
+				if (($mode == 'edit') && ($post_id == $post_data['topic_first_post_id']))
+				{
+					$tmp = preg_split('/=/', $redirect_url)[2];
+					$topic_id = preg_split('/&/', $tmp)[0];
+					$sql = 'UPDATE `phpbb_pages`
+							SET `page_string_id` = \'' . $post_data['post_page'] . '\' WHERE `page_topic_id` = ' . $topic_id;
+					$result = $db->sql_query($sql);
+				}
+				else if (empty($topic_id))
+				{
+					$topic_id = array_pop(preg_split('/=/', $redirect_url));
+					$sql = 'INSERT INTO phpbb_pages (
+								`page_topic_id` ,
+								`page_string_id`
+							)
+							VALUES (' . $topic_id . ', \'' . $post_data['post_page'] . '\');';
+					$result = $db->sql_query($sql);
+				}
+			}]]></action>
+					</edit>
+
+					<edit>
+						<find><![CDATA[	$preview_subject = censor_text($post_data['post_subject']);]]></find>
+						<action type="after-add"><![CDATA[
+	if ($forum_id == $pages_forum_id)
+	{
+		$preview_pages = censor_text($post_data['post_page']);
+	}]]></action>
+					</edit>
+
+					<edit>
+						<find><![CDATA[			'PREVIEW_SIGNATURE'		=> $preview_signature,]]></find>
+						<action type="after-add"><![CDATA[			'PREVIEW_PAGE'			=> ($forum_id == $pages_forum_id) ? $preview_page : '',]]></action>
+					</edit>
+
+					<edit>
+						<find><![CDATA[$form_enctype = (@ini_get('file_uploads') == '0' || strtolower(@ini_get('file_uploads')) == 'off' || !$config['allow_attachments'] || !$auth->acl_get('u_attach') || !$auth->acl_get('f_attach', $forum_id)) ? '' : ' enctype="multipart/form-data"';
+add_form_key('posting');]]></find>
+						<action type="after-add"><![CDATA[
+if (($forum_id == $pages_forum_id) && !empty($topic_id))
+{
+	$sql = 'SELECT page_string_id
+		FROM phpbb_pages
+		WHERE page_topic_id = ' . $topic_id;
+	$result = $db->sql_query($sql);
+	$page_string_id = $db->sql_fetchrow($result)['page_string_id'];
+	if ($preview)
+	{
+		$page_string_id = $post_data['post_page'];
+	}
+}
+else if(empty($topic_id) && !empty($post_data['post_page']))
+{
+	$page_string_id = $post_data['post_page'];
+}]]></action>
+					</edit>
+
+					<edit>
+						<find><![CDATA[	'UA_PROGRESS_BAR'		=> addslashes(append_sid("{$phpbb_root_path}posting.$phpEx", "f=$forum_id&amp;mode=popup")),]]></find>
+						<action type="after-add"><![CDATA[	'PAGE'					=> (!empty($page_string_id)) ? $page_string_id : '',]]></action>
+					</edit>
+
+					<edit>
+						<find><![CDATA[	'S_FORM_ENCTYPE'			=> $form_enctype,]]></find>
+						<action type="after-add"><![CDATA[	'S_NEW_PAGE'				=> (($forum_id == $pages_forum_id) && (empty($topic_id) || ($post_id == $post_data['topic_first_post_id']))) ? true : false,]]></action>
+					</edit>
+
+					<edit>
+						<find><![CDATA[			$next_post_id = delete_post($forum_id, $topic_id, $post_id, $data);
+			$post_username = ($post_data['poster_id'] == ANONYMOUS && !empty($post_data['post_username'])) ? $post_data['post_username'] : $post_data['username'];
+
+			if ($next_post_id === false)
+			{]]></find>
+						<action type="after-add"><![CDATA[				if ($forum_id == $pages_forum_id)
+				{
+					$sql = 'DELETE FROM `phpbb_pages`
+							WHERE `page_topic_id` = ' . $topic_id;
+					$result = $db->sql_query($sql);
+				}
+]]></action>
+					</edit>
+				</open>
+				<open src="styles/prosilver/templates/posting_editor.html">
+					<edit>
+						<find><![CDATA[	<!-- IF S_POST_ACTION or S_PRIVMSGS or S_EDIT_DRAFT -->
+	<dl style="clear: left;">
+		<dt><label for="subject">{L_SUBJECT}:</label></dt>
+		<dd><input type="text" name="subject" id="subject" size="45" maxlength="<!-- IF S_NEW_MESSAGE -->60<!-- ELSE -->64<!-- ENDIF -->" tabindex="2" value="{SUBJECT}{DRAFT_SUBJECT}" class="inputbox autowidth" /></dd>
+	</dl>
+	<!-- IF CAPTCHA_TEMPLATE and S_CONFIRM_CODE -->
+		<!-- DEFINE $CAPTCHA_TAB_INDEX = 3 -->
+		<!-- INCLUDE {CAPTCHA_TEMPLATE} -->
+	<!-- ENDIF -->
+	<!-- ENDIF -->]]></find>
+						<action type="after-add"><![CDATA[	<!-- IF S_NEW_PAGE -->
+	<dl style="clear: left;">
+		<dt><label for="page">{L_PAGE}:</label></dt>
+		<dd><input type="text" name="page" id="page" size="45" maxlength="60" tabindex="2" value="{PAGE}" class="inputbox autowidth" /></dd>
+	</dl>
+	<!-- ENDIF -->]]></action>
+					</edit>
+				</open>
+				<open src="styles/subsilver2/templates/posting_body.html">
+					<edit>
+						<find><![CDATA[<tr>
+	<td class="row1" width="22%"><b class="genmed">{L_SUBJECT}:</b></td>
+	<td class="row2" width="78%"><input class="post" style="width:450px" type="text" name="subject" size="45" maxlength="<!-- IF S_NEW_MESSAGE -->60<!-- ELSE -->64<!-- ENDIF -->" tabindex="2" value="{SUBJECT}" /></td>
+</tr>]]></find>
+						<action type="after-add"><![CDATA[<!-- IF S_NEW_PAGE -->
+<tr>
+	<td class="row1" width="22%"><b class="genmed">{L_PAGE}:</b></td>
+	<td class="row2" width="78%"><input class="post" style="width:450px" type="text" name="page" size="45" maxlength="20" tabindex="2" value="{PAGE}" /></td>
+</tr>
+<!-- ENDIF -->]]></action>
+					</edit>
+				</open>
+				<diy-instructions lang="en"><![CDATA[After making the file edits,
+gp tp ACP > General > Board features > Forum containing pages :: select the forum intended to contain dynamic pages
+go to ACP > Styles > Templates > prosilver :: click  [ Refresh ]
+go to ACP > Styles > Templates > subsilver2 :: click  [ Refresh ]]]></diy-instructions>
+			</action-group>
+		</mod>

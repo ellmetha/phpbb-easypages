@@ -304,7 +304,7 @@ else if(empty($topic_id) && !empty($post_data['post_page']))
 					</edit>
 				</open>
 				<diy-instructions lang="en"><![CDATA[After making the file edits,
-gp tp ACP > General > Board features > Forum containing pages :: select the forum intended to contain dynamic pages
+go go ACP > General > Board features > Forum containing pages :: select the forum intended to contain dynamic pages
 go to ACP > Styles > Templates > prosilver :: click  [ Refresh ]
 go to ACP > Styles > Templates > subsilver2 :: click  [ Refresh ]]]></diy-instructions>
 			</action-group>
